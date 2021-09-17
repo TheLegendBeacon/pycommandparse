@@ -1,6 +1,7 @@
 from pycommandparse import __version__
 from pycommandparse.parsers import BaseParser as Parser
-from pycommandparse import Command
+from pycommandparse.errors import CommandNotFound, ArgumentError
+import pytest
 
 
 def test_version():
@@ -17,11 +18,14 @@ def test_base_parser():
             for x in args:
                 intlist.append(int(x))
         except ValueError:
-            return "ArgumentError: Unable to turn a value into an integer."
+            raise ArgumentError("Unable to turn a value into an integer.")
         return str(sum(intlist))
 
     assert x.parse_run("add 3 5 6") == "14"
-    assert (
-        x.parse_run("add 3 5 hi")
-        == "ArgumentError: Unable to turn a value into an integer."
-    )
+    with pytest.raises(ArgumentError):
+        x.parse_run("add 3 6 76 hi")
+
+    x.remove_command(x.get_command("add"))
+
+    with pytest.raises(CommandNotFound):
+        x.parse_run("add 3 5 6")

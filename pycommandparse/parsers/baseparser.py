@@ -43,12 +43,27 @@ class BaseParser:
         docs = f'Function "{command.name}"\n\tAliases: {command.aliases}\n\tUsage: {command.usage}\n\tDescription: {command.description}'
         return docs
 
+    def get_command(self, commandName: str):
+        if commandName not in self.command_dict:
+            raise CommandNotFound
+        return self.command_dict[commandName]
+
     def add_command(self, command: Command):
         self.commands.append(command)
         aliases = command.aliases
         name = command.name
         for x in [name, *aliases]:
             self.command_dict[x] = command
+
+    def remove_command(self, command: Command):
+        self.commands.remove(command)
+        for key, val in zip(
+            list(self.command_dict.keys()), list(self.command_dict.values())
+        ):
+            if val == command:
+                del self.command_dict[key]
+
+    # Command Decorator
 
     def command(
         self,

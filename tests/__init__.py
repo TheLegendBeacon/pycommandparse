@@ -1,1 +1,1 @@
-from test_pycommandparse import testBaseParser
+from .test_pycommandparse import *
