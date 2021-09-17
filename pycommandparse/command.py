@@ -1,5 +1,13 @@
 class Command:
-    def __init__(self, name, command, usage: str = None, description: str = "Not Implemented.", number_of_args: int = None, aliases: list[str] = []):
+    def __init__(
+        self,
+        name,
+        command,
+        usage: str = None,
+        description: str = "Not Implemented.",
+        number_of_args: int = None,
+        aliases: list[str] = [],
+    ):
         self.name = name
         self.command = command
         self.usage = usage
