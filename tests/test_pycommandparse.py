@@ -12,10 +12,10 @@ def test_base_parser():
     x = Parser()
 
     @x.command(name="add", aliases=["addition", "sum"])
-    def add(*args):
+    def add(*numbers):
         intlist = []
         try:
-            for x in args:
+            for x in numbers:
                 intlist.append(int(x))
         except ValueError:
             raise ArgumentError("Unable to turn a value into an integer.")
