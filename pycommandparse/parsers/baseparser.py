@@ -4,7 +4,7 @@ from ..command import Command
 
 
 class BaseParser:
-    def __init__(self, commands: list[Command], histsize: int = 100):
+    def __init__(self, commands: list[Command] = [], histsize: int = 100):
         self._histsize = histsize
         self._histfile = []
 
@@ -15,16 +15,6 @@ class BaseParser:
 
         self.add_command(Command("help", self.help, description="Provides documentation for commands.", aliases=['h']))
     
-    def _add_to_histfile(self, inp: str):
-        if len(self._histfile) < self._histsize:
-            self._histfile.append(inp)
-        elif len(self._histfile) == self._histsize:
-            self._histfile.pop(0)
-            self._histfile.append(inp)
-    
-    def _clear_histfile(self):
-        self._histfile = []
-
     def help(self, *args):
 
         if len(args) > 1:
@@ -45,12 +35,17 @@ class BaseParser:
         docs = f"Function \"{command.name}\"\n\tAliases: {command.aliases}\n\tUsage: {command.usage}\n\tDescription: {command.description}"
         return docs
 
-
     def add_command(self, command: Command):
         aliases = command.aliases
         name = command.name
         for x in [name, *aliases]:
             self.commands[x] = command
+    
+    def command(self, name: str, aliases: list = [], usage: str = None, description: str = "No description.", number_of_arguments: int = None):
+        def decorator(function):
+            command = Command(name, function, usage, description, number_of_args=number_of_arguments, aliases=aliases)
+            self.add_command(command)
+        return decorator
 
     def check_commas(self, inputs: list):
         form_inputs = []
@@ -89,6 +84,7 @@ class BaseParser:
 
         if self.commands[command].number_of_args is not None:
             if len(arguments) != self.commands[command].number_of_args:
+                print(self.commands[command].number_of_args)
                 raise ArgumentError
 
         self._add_to_histfile(inp)
@@ -98,3 +94,15 @@ class BaseParser:
         parsed = self.parse(inp)
         command = list(parsed.keys())[0]
         return command(*parsed[command])
+
+    # Histfile Management
+
+    def _add_to_histfile(self, inp: str):
+        if len(self._histfile) < self._histsize:
+            self._histfile.append(inp)
+        elif len(self._histfile) == self._histsize:
+            self._histfile.pop(0)
+            self._histfile.append(inp)
+    
+    def _clear_histfile(self):
+        self._histfile = []

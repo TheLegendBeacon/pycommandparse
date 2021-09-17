@@ -6,14 +6,18 @@ def test_version():
     assert __version__ == '0.1.0'
 
 def test_base_parser():
-    def add(*args): return str(sum([int(x) for x in args]))
-    def say(*args): print(*args)
+    x = Parser()
 
-    x = Parser([Command("say", print, description="Says what you ask it to say", aliases=['print'])])
-    while True:
-        inp = input("❯ ")
-        if inp.strip() == "":
-            continue
-        out = x.parse_run(inp)
-        if out is not None:
-            print(out)
+    @x.command(name="add", aliases=['addition', 'sum'])
+    def add(*args): 
+        intlist = []
+        try:
+            for x in args:
+                intlist.append(int(x))
+        except ValueError:
+            return "ArgumentError: Unable to turn a value into an integer."
+        return str(sum(intlist))
+
+    assert x.parse_run("add 3 5 6") == '14'
+    assert x.parse_run("add 3 5 hi") == 'ArgumentError: Unable to turn a value into an integer.'
+
