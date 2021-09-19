@@ -5,7 +5,7 @@ import pytest
 
 
 def test_version():
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0"
 
 
 def test_base_parser():
@@ -29,3 +29,34 @@ def test_base_parser():
 
     with pytest.raises(CommandNotFound):
         x.parse_run("add 3 5 6")
+
+    @x.group(name="group", aliases=['test'])
+    def group_func(*args):
+        return "no"
+    
+    assert x.parse_run("test") == 'no'
+
+    group = x.get_group("group")
+
+
+    @group.command(name="e", aliases=['f'], number_of_arguments=2)
+    def e(x, y):
+        return "ok and?"
+
+    assert x.parse_run("test e gh it") == "ok and?"
+
+    @x.group(name='math', aliases=['m'])
+    def mathfunc(*args):
+        return "use the subcommands"
+    
+    math = x.get_group('math')
+
+    @math.command(name='add', aliases=['a'], usage='add <numbers>')
+    def add(*args):
+        return str(sum([int(x) for x in args]))
+    
+    assert x.parse_run("m") == 'use the subcommands'
+    assert x.parse_run('math add 3 5') == '8'
+    assert x.parse_run('m a 4 5') == '9'
+
+

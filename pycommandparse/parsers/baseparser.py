@@ -1,69 +1,98 @@
-from typing import Dict
-from ..errors import ArgumentError, CommandNotFound
-from ..command import Command
+from typing import Dict, List, Any
+from ..errors import ArgumentError, CommandNotFound, GroupNotFound
+from ..command import Command, Group
 
 
-class BaseParser:
-    def __init__(self, commands: list[Command] = [], histsize: int = 100):
-        self._histsize = histsize
+def check_commas(inputs: list):
+    form_inputs = []
+    temp_list = []
+
+    inquote = False
+    for x in inputs:
+        if list(x).count('"') % 2 == 0:
+            if not inquote:
+                form_inputs.append(x.replace('"', ""))
+            else:
+                temp_list.append(x)
+        else:
+            if inquote == False:
+                inquote = True
+                temp_list.append(x.replace('"', ""))
+            else:
+                temp_list.append(x.replace('"', ""))
+                total_string = " ".join(temp_list)
+                form_inputs.append(total_string)
+                temp_list = []
+                inquote = False
+
+    return form_inputs
+
+class BaseParser(Group):
+    def __init__(
+        self,
+        commands: List[Command] = [],
+        groups: List[Group] = [],
+        histsize: int = 100,
+    ) -> None:
+        Group.__init__(self, name="__parser__", commands=commands)
         self._histfile = []
+        self._histsize = histsize
+        self.groups: List[Group] = [self]
+        self.commands = [x for x in self]
+        self.group_dict: Dict[str, Group] = {None: self}
 
-        self.commands = [*commands]
+        for group in groups:
+            self.add_group(group)
 
-        self.command_dict: dict[str, Command] = {}
-        for command in commands:
-            self.add_command(command=command)
+    def get_group(self, groupName: str):
+        if groupName not in self.group_dict:
+            raise GroupNotFound
+        return self.group_dict[groupName]
 
-        self.add_command(
-            Command(
-                "help",
-                self.help,
-                description="Provides documentation for commands.",
-                aliases=["h"],
-            )
-        )
-
-    def help(self, *args):
-
-        if len(args) > 1:
-            raise ArgumentError("Too Many Arguments. Help takes 0 or 1 argument.")
-
-        if len(args) == 0:
-            docs = []
-            for command in set(self.command_dict.values()):
-                docs.append(f"{command.name}: {command.description}")
-            return "\n".join(docs)
-
-        commandName = args[0]
-
-        if commandName not in self.command_dict:
-            raise CommandNotFound(f'"{commandName}" not found.')
-
-        command = self.command_dict[commandName]
-        docs = f'Function "{command.name}"\n\tAliases: {command.aliases}\n\tUsage: {command.usage}\n\tDescription: {command.description}'
-        return docs
-
-    def get_command(self, commandName: str):
-        if commandName not in self.command_dict:
-            raise CommandNotFound
-        return self.command_dict[commandName]
-
-    def add_command(self, command: Command):
-        self.commands.append(command)
-        aliases = command.aliases
-        name = command.name
+    def add_group(self, group: Group):
+        self.groups.append(group)
+        aliases = group.aliases
+        name = group.name
         for x in [name, *aliases]:
-            self.command_dict[x] = command
+            self.group_dict[x] = group
 
-    def remove_command(self, command: Command):
-        self.commands.remove(command)
+    def remove_group(self, group: Group):
+        self.groups.remove(group)
         for key, val in zip(
-            list(self.command_dict.keys()), list(self.command_dict.values())
+            list(self.group_dict.keys()), list(self.group_dict.values())
         ):
-            if val == command:
+            if val == group:
                 del self.command_dict[key]
 
-    # Command Decorator
+    def parse(self, inp: str) -> Dict[Command, List]:
+        print(inp)
+        inputs = inp.split(" ")
+        form_inputs = check_commas(inputs)
+        command = form_inputs[0]
+        arguments = form_inputs[1:]
+
+        if command in self.command_dict:
+
+            if self.command_dict[command].number_of_args is not None:
+
+                if len(arguments) != self.command_dict[command].number_of_args:
+                    raise ArgumentError
+
+            self._add_to_histfile(inp)
+            return {self.command_dict[command]: arguments}
+
+        elif command in self.group_dict:
+            group = self.group_dict[command]
+            self._add_to_histfile(inp)
+            return group.parse(*arguments)
+
+        else:
+            raise CommandNotFound
+
+    def parse_run(self, inp: str) -> Any:
+        parsed = self.parse(inp)
+        command = list(parsed.keys())[0]
+        return command(*parsed[command])
 
     def command(
         self,
@@ -86,55 +115,23 @@ class BaseParser:
 
         return decorator
 
-    def check_commas(self, inputs: list):
-        form_inputs = []
-        temp_list = []
-
-        inquote = False
-        for x in inputs:
-            if list(x).count('"') % 2 == 0:
-                if not inquote:
-                    form_inputs.append(x.replace('"', ""))
-                else:
-                    temp_list.append(x)
-            else:
-                if inquote == False:
-                    inquote = True
-                    temp_list.append(x.replace('"', ""))
-                else:
-                    temp_list.append(x.replace('"', ""))
-                    total_string = " ".join(temp_list)
-                    form_inputs.append(total_string)
-                    temp_list = []
-                    inquote = False
-
-        return form_inputs
-
-    def parse(self, inp):
-        inputs = inp.split(" ")
-        form_inputs = self.check_commas(inputs)
-
-        command = form_inputs[0]
-
-        if command not in self.command_dict:
-            raise CommandNotFound(f'"{command}" not found.')
-
-        arguments = form_inputs[1:]
-
-        if self.command_dict[command].number_of_args is not None:
-            if len(arguments) != self.command_dict[command].number_of_args:
-                print(self.command_dict[command].number_of_args)
-                raise ArgumentError
-
-        self._add_to_histfile(inp)
-        return {self.command_dict[command]: arguments}
-
-    def parse_run(self, inp: str):
-        parsed = self.parse(inp)
-        command = list(parsed.keys())[0]
-        return command(*parsed[command])
-
-    # Histfile Management
+    def group(
+        self,
+        name: str,
+        aliases: list = [],
+        description: str = "No description.",
+    ):
+        def decorator(function):
+            fallback = Command(
+                name,
+                function,
+                description,
+                aliases=aliases,
+            )
+            self.add_group(
+                Group(name, fallback, description=description, aliases=aliases)
+            )
+        return decorator
 
     def _add_to_histfile(self, inp: str):
         if len(self._histfile) < self._histsize:

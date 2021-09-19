@@ -4,3 +4,7 @@ class ArgumentError(Exception):
 
 class CommandNotFound(Exception):
     pass
+
+
+class GroupNotFound(Exception):
+    pass
