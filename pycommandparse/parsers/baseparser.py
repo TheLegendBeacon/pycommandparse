@@ -27,6 +27,7 @@ def check_commas(inputs: list):
 
     return form_inputs
 
+
 class BaseParser(Group):
     def __init__(
         self,
@@ -131,6 +132,7 @@ class BaseParser(Group):
             self.add_group(
                 Group(name, fallback, description=description, aliases=aliases)
             )
+
         return decorator
 
     def _add_to_histfile(self, inp: str):
