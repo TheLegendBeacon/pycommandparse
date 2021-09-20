@@ -5,3 +5,4 @@ pycommandparse/parsers/__pycache__
 .vscode/
 .pytest_cache/
 .vscode/settings.json
+pycommandparse/event_loops/__pycache__

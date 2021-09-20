@@ -1,40 +1,6 @@
-from typing import Any, Callable, Dict, List, Optional
+from .misc import MetaData, Command
 from .errors import CommandNotFound, ArgumentError
-
-
-class MetaData:
-    def __init__(
-        self,
-        name: str,
-        description: Optional[str] = "Not Implemented.",
-        aliases: List[str] = [],
-    ) -> None:
-        self.name = name
-        self.description = description
-        self.aliases = aliases
-
-
-class Command(MetaData):
-    def __init__(
-        self,
-        name: str,
-        command: Callable[..., str],
-        usage: Optional[str] = None,
-        description: Optional[str] = "Not Implemented.",
-        number_of_args: Optional[int] = None,
-        aliases: List[str] = [],
-    ) -> None:
-
-        MetaData.__init__(self, name, description, aliases)
-        self.usage = usage
-        self.command: Callable[..., str] = command
-        self.number_of_args: Optional[int] = number_of_args
-
-        if usage == None:
-            self.usage = f"{self.name} *args"
-
-    def __call__(self, *args) -> Any:
-        return self.command(*args)
+from typing import List, Optional, Dict
 
 
 class Group(MetaData):

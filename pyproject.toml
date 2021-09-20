@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pycommandparse"
 version = "1.0.0"
-description = """A collection of classes that help parse commands."""
+description = """A collection of classes simplifies linking text commands to functions."""
 authors = ["thelegendbeacon"]
 license = "MIT"
 readme = "README.md"
@@ -9,11 +9,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6"
+colorama = "^0.4.4"
 
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 black = "^21.9b0"
+flake8 = "^3.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

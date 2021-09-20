@@ -1,6 +1,6 @@
 from typing import Dict, List, Any
 from ..errors import ArgumentError, CommandNotFound, GroupNotFound
-from ..command import Command, Group
+from ..groups import Command, Group
 
 
 def check_commas(inputs: list):
@@ -15,7 +15,7 @@ def check_commas(inputs: list):
             else:
                 temp_list.append(x)
         else:
-            if inquote == False:
+            if inquote is False:
                 inquote = True
                 temp_list.append(x.replace('"', ""))
             else:
@@ -66,7 +66,6 @@ class BaseParser(Group):
                 del self.command_dict[key]
 
     def parse(self, inp: str) -> Dict[Command, List]:
-        print(inp)
         inputs = inp.split(" ")
         form_inputs = check_commas(inputs)
         command = form_inputs[0]
