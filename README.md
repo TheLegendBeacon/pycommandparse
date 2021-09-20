@@ -5,7 +5,7 @@ The Parser takes these as inputs.
 
 Internally, the parser has a dictionary with keys having all names and aliases with the values being the corresponding `Command` instances.
 
-The Parser matches the incoming commands to the given names/aliases and runs the command with the arguments.
+The Parser matches the imcoming commands to the given names/aliases and runs the command with the arguments.
 
 ## Examples
 
