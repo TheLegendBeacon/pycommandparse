@@ -1,7 +1,14 @@
-from pycommandparse import __version__
-from pycommandparse.parsers import BaseParser
-from pycommandparse.errors import CommandNotFound, ArgumentError
-from pycommandparse.event_loops.baseloop import BaseLoop, Style
+try:
+    from pycommandparse import __version__
+    from pycommandparse.parsers import BaseParser
+    from pycommandparse.errors import CommandNotFound, ArgumentError
+    from pycommandparse.event_loops.baseloop import BaseLoop, Style
+except ModuleNotFoundError:
+    from ..pycommandparse import __version__
+    from ..pycommandparse.parsers import BaseParser
+    from ..pycommandparse.errors import CommandNotFound, ArgumentError
+    from ..pycommandparse.event_loops.baseloop import BaseLoop, Style
+
 import pytest
 
 
