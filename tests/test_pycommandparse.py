@@ -3,7 +3,7 @@ try:
     from pycommandparse.parsers import BaseParser
     from pycommandparse.errors import CommandNotFound, ArgumentError
     from pycommandparse.event_loops.baseloop import BaseLoop, Style
-except ModuleNotFoundError:
+except ModuleNotFoundError, ImportError:
     from ..pycommandparse import __version__
     from ..pycommandparse.parsers import BaseParser
     from ..pycommandparse.errors import CommandNotFound, ArgumentError
