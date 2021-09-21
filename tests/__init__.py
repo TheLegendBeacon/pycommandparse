@@ -1,3 +1,3 @@
-from . import tests
+from . import test_pycommandparse
 
-__all__ = ['tests']
+__all__ = ['test_pycommandparse']
